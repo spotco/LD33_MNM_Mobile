@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.Audio;
 
-public class UiPanelGame : Uzu.UiPanel {
+public class UiPanelGame : Uzu.UiPanel, TouchEventDelegate {
 
 	public static UiPanelGame inst;
 
@@ -20,9 +20,20 @@ public class UiPanelGame : Uzu.UiPanel {
 	[SerializeField] public GameObject _chat_head_1, _chat_head_2;
 
 	[SerializeField] public ChatManager _chats;
-
+	
+	[SerializeField] public RectTransform _touch_bounds;
+	public TouchEventDelegateDispatcher _touch_dispatcher = new TouchEventDelegateDispatcher();
+	
+	[SerializeField] public RectTransform _pause_button_bounds;
+	[SerializeField] public Image _pause_button_image;
+	private SPTouchButton _pause_button;
+	
 	public override void OnInitialize() {
 		inst = this;
+		_touch_dispatcher.PInitialize();
+		_pause_button = new SPTouchButton() {
+			_button_bounds = _pause_button_bounds
+		};
 	}
 
 	private float _tar_pause_icon_alpha = 0;
@@ -46,12 +57,14 @@ public class UiPanelGame : Uzu.UiPanel {
 	}
 
 	public override void OnEnter(Uzu.PanelEnterContext context) {
+		try {
 		_bgm_handle = Main.AudioController.PlayBgm(AudioClipIds.BGM_MAIN_LOOP);
 
 		_bgm_handle._handle_audio_source.outputAudioMixerGroup = _bgm_mixer_group;
 		
 		_audio_normal_snapshot = _bgm_mixer_group.audioMixer.FindSnapshot("Normal");
 		_audio_paused_snapshot = _bgm_mixer_group.audioMixer.FindSnapshot("Paused");
+		} catch (System.Exception e) {}
 
 		this.bgm_audio_set_paused_mode(false);
 
@@ -74,11 +87,30 @@ public class UiPanelGame : Uzu.UiPanel {
 		gameObject.SetActive(false);
 	}
 	
+	public void TouchBeginWithScreenPosition(Vector2 spos) {
+		_pause_button.TouchBeginWithScreenPosition(spos);
+		if (!_pause_button._touch_began_on_button) Main.LevelController.TouchBeginWithScreenPosition(spos);
+	}
+	public void TouchHoldWithScreenPosition(Vector2 spos) {
+		_pause_button.TouchHoldWithScreenPosition(spos);
+		if (!_pause_button._touch_began_on_button) Main.LevelController.TouchHoldWithScreenPosition(spos);
+	}
+	public void TouchEnd() {
+		if (!_pause_button._touch_began_on_button) Main.LevelController.TouchEnd();
+		_pause_button.TouchEnd();
+	}
+	public int GetID() { return _touch_bounds.gameObject.GetInstanceID(); }
+	
 	private void Update() {
+	
+		if (_pause_button.GetAndClearButtonProc()) {
+			Main.LevelController.notify_pause_button_toggled();
+		}
+	
 		if (Main.LevelController.m_currentMode == LevelController.LevelControllerMode.Timeout) {
 			_tar_pause_icon_alpha = 0.75f;
 		} else {
-			_tar_pause_icon_alpha = 0.0f;
+			_tar_pause_icon_alpha = 0.2f;
 		}
 		set_pause_icon_alpha(Util.drpt(_pause_icon.color.a,_tar_pause_icon_alpha,1/5.0f));
 

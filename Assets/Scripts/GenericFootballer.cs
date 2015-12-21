@@ -93,7 +93,7 @@ public class GenericFootballer : MonoBehaviour {
 		float reticule_anim_speed = 0.5f;
 		float reticule_scale = 200;
 		Color tar = Color.white;
-		if (Main.LevelController.footballer_has_ball(this)) {
+		if (Main.LevelController.footballer_has_ball(this) && !_is_timeout) {
 			reticule_anim_speed = -1.3f;
 			reticule_scale = 270;
 			tar = new Color(0.25f,0.86f,0.25f);
@@ -171,10 +171,16 @@ public class GenericFootballer : MonoBehaviour {
 			_current_mode = GenericFootballerMode.MoveBackIntoBounds;
 		} else if (Main.LevelController.footballer_has_ball(this)) {
 			_current_mode = GenericFootballerMode.PlayerTeamHasBall;
-		} else if (_current_mode == GenericFootballerMode.PlayerTeamHasBall && !Main.LevelController.footballer_has_ball(this)) {
+		} else if (_stunned_mode_ct > 0) {
+			_current_mode = GenericFootballerMode.Stunned;
+		} else if (_waitdelay > 0) {
+			_current_mode = GenericFootballerMode.CatchWait;
+		} else if (_has_command_move_to_point) {
+			_current_mode = GenericFootballerMode.CommandMoving;
+		} else {
 			_current_mode = GenericFootballerMode.Idle;
 		}
-
+		
 		if (_current_mode == GenericFootballerMode.MoveBackIntoBounds) {
 			Vector3 tar_pos = Main.LevelController.m_minGameBounds.bounds.ClosestPoint(transform.position);
 			tar_pos.z = 0;
@@ -216,73 +222,35 @@ public class GenericFootballer : MonoBehaviour {
 			if (_waitdelay < 0) _current_mode = GenericFootballerMode.Idle;
 			
 		} else if (_current_mode == GenericFootballerMode.PlayerTeamHasBall) {
-			_has_command_move_to_point = false;
-			Vector3 delta =  Util.vec_sub(Main.LevelController.GetLastMousePointInBallBounds(),transform.position);
-			Vector3 dir = delta.normalized;
-			float mag = delta.magnitude;
 			Main.LevelController.m_pathRenderer.clear_path(_id);
-			
-			if (Input.GetMouseButton(0)) {
-				_ball_charging = true;
-				_throw_charge_ct = Mathf.Clamp(Mathf.Min(_throw_charge_ct+Util.dt_scale*10.0f,mag),0,700);
-				
-				Vector3 p0 = this.transform.position;
-				Vector3 p3 = Util.vec_add(p0,Util.vec_scale(dir,_throw_charge_ct));
-				Vector3 p1 = new Vector3(
-					Util.lerp(p0.x,p3.x,0.25f),
-					Util.lerp(p0.y,p3.y,0.25f),
-					-150
-				);
-				Vector3 p2 = new Vector3(
-					Util.lerp(p0.x,p3.x,0.75f),
-					Util.lerp(p0.y,p3.y,0.75f),
-					-150
-				);
-				__tmp.Clear();
-				for (float i = 0; i < 1.0f; i += 0.125f) {
-					__tmp.Add(Util.bezier_val_for_t(p0,p1,p2,p3,i));
+			if (Main.LevelController._control_manager._has_touch_activated_drag) {
+				if (Main.LevelController._control_manager._this_frame_touch_ended) {
+					float vel = Mathf.Clamp(Main.LevelController._control_manager._scroll_avg_vel.magnitude,10,25);
+					this.throw_ball(Main.LevelController._control_manager._scroll_avg_vel.normalized, Util.y_for_point_of_2pt_line(new Vector2(10,80),new Vector2(25,250),vel));
+					Main.LevelController._control_manager._scroll_avg_vel = new Vector2();
+					_ball_charging = false;
+				} else {
+					_ball_charging = Main.LevelController._control_manager._is_touch_down;
 				}
-				__tmp.Add(p3);
-				Main.LevelController.m_pathRenderer.id_draw_path(_id,this.transform.position,__tmp.ToArray());
-				
-			} else if (!Input.GetMouseButton(0) && _ball_charging) {
-				if (_throw_charge_ct > 100) {
-					throw_ball(dir, _throw_charge_ct);
-				}
-				_ball_charging = false;
-				_throw_charge_ct = 0;
 				
 			} else {
-				_throw_charge_ct = 0;
-				float scf = Mathf.Clamp(mag,0,200)/200.0f;
-				float speed = this.get_move_speed_active() * Util.dt_scale;
-				dir.Scale(Util.valv(scf*speed));
-				if (transform.position.x + dir.x > Main.LevelController._left_goal_line.transform.position.x && transform.position.x + dir.x < Main.LevelController._right_goal_line.transform.position.x){
-					transform.position = Util.vec_add(transform.position,dir);
+				_ball_charging = false;
+				if (Main.LevelController._control_manager._this_frame_touch_ended) {
+					this.CommandMoveTo(Main.LevelController._control_manager._last_world_touch_point);
 				}
+				this.command_moving_action();
 			}
 			
 		} else if (_current_mode == GenericFootballerMode.Idle) {
 			
 		} else if (_current_mode == GenericFootballerMode.CommandMoving) {
-			float speed = this.get_move_speed() * Util.dt_scale;
-			Vector3 delta = Util.vec_sub(new Vector3(_command_move_to_point.x,_command_move_to_point.y),transform.position);
-			if (delta.magnitude <= speed) {
-				transform.position = new Vector3(_command_move_to_point.x,_command_move_to_point.y);
-				_current_mode = GenericFootballerMode.Idle;
-				_has_command_move_to_point = false;
-				
-			} else {
-				Vector3 dir = delta.normalized;
-				dir.Scale(Util.valv(speed));
-				transform.position = Util.vec_add(transform.position,dir);
-			}
+			this.command_moving_action();
 			
 		}
 		
 		Vector3 rts = _renderer.transform.localScale;
 		if (Main.LevelController.footballer_has_ball(this) && _ball_charging) {
-			if (Main.LevelController.GetLastMousePointInBallBounds().x > transform.position.x) {
+			if (Main.LevelController._control_manager._scroll_avg_vel.x >= 0) {
 				rts.x = Mathf.Abs(rts.x) * 1;
 			} else {
 				rts.x = Mathf.Abs(rts.x) * -1;
@@ -296,6 +264,22 @@ public class GenericFootballer : MonoBehaviour {
 		_renderer.transform.localScale = rts;
 	}
 	
+	private void command_moving_action() {
+		if (!_has_command_move_to_point) return;
+		float speed = this.get_move_speed() * Util.dt_scale;
+		Vector3 delta = Util.vec_sub(new Vector3(_command_move_to_point.x,_command_move_to_point.y),transform.position);
+		if (delta.magnitude <= speed) {
+			transform.position = new Vector3(_command_move_to_point.x,_command_move_to_point.y);
+			_current_mode = GenericFootballerMode.Idle;
+			_has_command_move_to_point = false;
+			
+		} else {
+			Vector3 dir = delta.normalized;
+			dir.Scale(Util.valv(speed));
+			transform.position = Util.vec_add(transform.position,dir);
+		}
+	}
+	
 	public void throw_ball(Vector3 dir, float charge_ct) {
 		float vel = Mathf.Clamp(charge_ct/2000.0f * 10 + 6,6,18);
 		Main.LevelController.m_commentaryManager.notify_tutorial_pass_thrown();
@@ -303,7 +287,7 @@ public class GenericFootballer : MonoBehaviour {
 		Main.LevelController.CreateLooseBall(
 			this.transform.position,
 			Util.vec_scale(dir,vel)
-			);
+		);
 		Main.LevelController.m_playerTeamFootballersWithBall.Remove(this);
 		Main.LevelController.m_enemyTeamFootballersWithBall.Remove(this);
 
@@ -399,23 +383,24 @@ public class GenericFootballer : MonoBehaviour {
 			GetComponent<BotBase>().Msg_Stunned();
 		}
 	}
-
+	
+	private bool _is_timeout = false;
 	public void timeout_start() {
+		_is_timeout = true;
 		Main.LevelController.m_pathRenderer.clear_path(_id);
-		if (_current_mode == GenericFootballerMode.CommandMoving || (_current_mode == GenericFootballerMode.Stunned && _has_command_move_to_point)) {
+		if (_has_command_move_to_point) {
 			Vector3 tar_pos = new Vector3(_command_move_to_point.x,_command_move_to_point.y);                         
 			Main.LevelController.m_pathRenderer.id_draw_path(_id,this.transform.position,new Vector3[] { tar_pos });
 		}
 	}
 
 	public void timeout_end() {
+		_is_timeout = false;
 		Main.LevelController.m_pathRenderer.clear_path(_id);
 	}
 
 	public void timeout_update() {
-		if (Main.LevelController.footballer_has_ball(this)) {
-			this.set_select_reticule_alpha(0.5f);
-		} else if (!this.can_take_commands()) {
+		if (!this.can_take_commands()) {
 			this.set_select_reticule_alpha(0.0f);
 		} else if (Main.LevelController.m_timeoutSelectedFootballer == this) {
 			this.set_select_reticule_alpha(0.75f);
@@ -437,8 +422,10 @@ public class GenericFootballer : MonoBehaviour {
 		_has_command_move_to_point = true;
 
 		Main.LevelController.m_pathRenderer.clear_path(_id);
-		Vector3 tar_pos = new Vector3(_command_move_to_point.x,_command_move_to_point.y);                         
-		Main.LevelController.m_pathRenderer.id_draw_path(_id,this.transform.position,new Vector3[] { tar_pos });
+		Vector3 tar_pos = new Vector3(_command_move_to_point.x,_command_move_to_point.y);
+		if (_is_timeout) {                 
+			Main.LevelController.m_pathRenderer.id_draw_path(_id,this.transform.position,new Vector3[] { tar_pos });
+		}
 	}
 
 	public bool ContainsPoint(Vector3 pt) {
@@ -462,9 +449,7 @@ public class GenericFootballer : MonoBehaviour {
 
 	public bool can_pickup_ball() { return this._current_mode != GenericFootballerMode.Stunned && this._current_mode != GenericFootballerMode.MoveBackIntoBounds; }
 	public bool can_take_commands() { 
-		return 
-				this._current_mode != GenericFootballerMode.MoveBackIntoBounds && 
-				this._current_mode != GenericFootballerMode.PlayerTeamHasBall; 
+		return this._current_mode != GenericFootballerMode.MoveBackIntoBounds; 
 	}
 
 	private Vector2 _last_pos;

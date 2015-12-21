@@ -1636,6 +1636,9 @@ MonoBehaviour:
   _chat_head_1: {fileID: 126518}
   _chat_head_2: {fileID: 109852}
   _chats: {fileID: 11497222}
+  _touch_bounds: {fileID: 22476866}
+  _pause_button_bounds: {fileID: 22468240}
+  _pause_button_image: {fileID: 11458642}
   _bgm_mixer_group: {fileID: 24300001, guid: c8ba6de43edc04d589fe90968b0bf7d8, type: 2}
 --- !u!114 &11498160
 MonoBehaviour:

@@ -114,7 +114,7 @@ public class UIPanelTitle : Uzu.UiPanel {
 		case TitleState.Loop: {
 			_anim_t += 0.05f;
 			sprite_set_alpha(_click_anywhere_to_start,(Mathf.Sin(_anim_t)+1)/2.0f);
-			if (Input.GetMouseButtonUp(0)) {
+			if (_last_is_touch && !SPUtil.IsTouch()) {
 				_current_state = TitleState.FadeOutToTV;
 				_anim_t = 0;
 				Main.AudioController.PlayEffect("sfx_checkpoint");
@@ -139,7 +139,9 @@ public class UIPanelTitle : Uzu.UiPanel {
 
 		} break;
 		}
+		_last_is_touch = SPUtil.IsTouch();
 	}
+	private bool _last_is_touch = false;
 
 	private static void sprite_set_alpha(SpriteRenderer sprite, float val) {
 		Color c = sprite.color;

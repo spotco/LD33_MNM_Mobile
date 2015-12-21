@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
-using System.Collections;
+using UnityEngine.UI;
+using System.Collections.Generic;
+using System;
 
-public class UIPanelTV : Uzu.UiPanel {
+public class UIPanelTV : Uzu.UiPanel, TouchEventDelegate {
 
 	[SerializeField] private GameObject _MNM_logo;
 	[SerializeField] private GameObject _zoomexit_target;
@@ -12,7 +14,11 @@ public class UIPanelTV : Uzu.UiPanel {
 
 	[SerializeField] private ChatManager _chats;
 
+	[SerializeField] private RectTransform _touch_bounds;
+	private TouchEventDelegateDispatcher _touch_dispatcher = new TouchEventDelegateDispatcher();
+
 	public override void OnInitialize() {
+		_touch_dispatcher.PInitialize();
 	}
 
 	public override void OnEnter(Uzu.PanelEnterContext context) {
@@ -109,10 +115,27 @@ public class UIPanelTV : Uzu.UiPanel {
 	private UIPanelTVMode _current_mode;
 	private float _anim_t;
 	
+	private DateTime _last_touched_time = new DateTime(0);
+	private bool _double_tap_activated = false;
+	
+	public void TouchBeginWithScreenPosition(Vector2 spos) {}
+	public void TouchHoldWithScreenPosition(Vector2 spos) {}
+	public void TouchEnd() {
+		if (DateTime.Now.Subtract(_last_touched_time).TotalSeconds < 0.3) {
+			_double_tap_activated = true;
+		}
+		_last_touched_time = DateTime.Now;
+	}
+	public int GetID() { return _touch_bounds.gameObject.GetInstanceID(); }
+	
 	private float _time_until_next_talk_sound = 0;
 	private void Update() {
 		if (_current_mode == UIPanelTVMode.Idle) {
-			if (Input.GetKey(KeyCode.Space) || (_chats._messages.Count == 0 && _chats._text_scroll.finished() && _chats._ct <= 0)) {
+			_touch_dispatcher.PDispatchTouchWithDelegate(this,_touch_bounds);
+			if (_double_tap_activated || (_chats._messages.Count == 0 && _chats._text_scroll.finished() && _chats._ct <= 0)) {
+				
+				_double_tap_activated = false;
+				
 				_current_mode = UIPanelTVMode.ZoomExit;
 				_anim_t = 0;
 				_camera_fade.set_target_alpha(1);

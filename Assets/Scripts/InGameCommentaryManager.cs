@@ -128,7 +128,7 @@ public class InGameCommentaryManager {
 			if (UiPanelGame.inst.can_take_message() && Main.LevelController.m_currentMode != LevelController.LevelControllerMode.Opening) {
 				if (!_tutorial_has_issued_command) {
 					if (Main.LevelController.m_currentMode != LevelController.LevelControllerMode.Timeout) {
-						UiPanelGame.inst._chats.push_message("Hold space to call timeout!",1);
+						UiPanelGame.inst._chats.push_message("Tap a teammate to plan their tactics!",1);
 
 					} else {
 						UiPanelGame.inst._chats.push_message("Click and drag teammates in timeout to give commands!",1);
@@ -136,7 +136,7 @@ public class InGameCommentaryManager {
 
 				} else if (!_tutorial_has_passed_ball) {
 					if (Main.LevelController.get_footballer_team(Main.LevelController.nullableCurrentFootballerWithBall()) == Team.PlayerTeam) {
-						UiPanelGame.inst._chats.push_message("Click and hold to throw a pass.",1);
+						UiPanelGame.inst._chats.push_message("Swipe in a direction to throw a pass.",1);
 					}
 					
 				} else {

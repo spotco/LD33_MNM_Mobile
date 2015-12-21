@@ -31,7 +31,7 @@ public class Main : Uzu.Main
   protected override void OnMainBegin ()
   {
 	Application.targetFrameRate = 60;
-	Cursor.visible = false;
+	//Cursor.visible = false;
 	Main._current_level = GameLevel.Level1;
 	Main._current_repeat_reason = RepeatReason.None;
 	SpriteResourceDB.get_footballer_anim_resource(FootballerResourceKey.Player1);
@@ -57,6 +57,8 @@ public class Main : Uzu.Main
     // State initialization.
     {
 	  //_panelManager.ChangeCurrentPanel(PanelIds.Tv);
+	  
+	  //SPTODO
 	  _panelManager.ChangeCurrentPanel(PanelIds.Title);
 	}
   }
@@ -109,8 +111,8 @@ public class Main : Uzu.Main
 	public void Update() {
 		float dt_scale = (1/60.0f)/(Time.deltaTime);
 		Util.dt_scale = dt_scale;
-		Cursor.visible = false;
-		Cursor.lockState = CursorLockMode.Locked;
+		//Cursor.visible = false;
+		//Cursor.lockState = CursorLockMode.Locked;
 	}
 
 	public static GameLevel _current_level;

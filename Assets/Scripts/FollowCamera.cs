@@ -63,21 +63,20 @@ public class FollowCamera : MonoBehaviour {
 		// Position interp.
 		{
 			Vector3 target_move_to_position = new Vector3(
-				Util.drpt(_cachedPosition.x,_currentTargetPos.x,1/10.0f),
-				Util.drpt(_cachedPosition.y,_currentTargetPos.y,1/10.0f),
+				Util.drpt(_cachedPosition.x,_currentTargetPos.x,1),
+				Util.drpt(_cachedPosition.y,_currentTargetPos.y,1),
 				Util.drpt(_cachedPosition.z,_currentTargetPos.z,1/10.0f)
 			);
 			Vector3 target_move_delta = Util.vec_sub(target_move_to_position,_cachedPosition);
 			Vector3 max_move_delta = Util.vec_scale(Util.vec_sub(_currentTargetPos,_cachedPosition).normalized,5.0f);
+			
 
-			Vector3 neuCachedPosition = Util.vec_add(_cachedPosition, new Vector3(
-				Mathf.Sign(target_move_delta.x) * Mathf.Min(Mathf.Abs(target_move_delta.x),Mathf.Abs(max_move_delta.x)),
-				Mathf.Sign(target_move_delta.y) * Mathf.Min(Mathf.Abs(target_move_delta.y),Mathf.Abs(max_move_delta.y)),
-				Mathf.Sign(target_move_delta.z) * Mathf.Min(Mathf.Abs(target_move_delta.z),Mathf.Abs(max_move_delta.z))
-			));
+			Vector3 neuCachedPosition = target_move_to_position;
+			
 			if (Main.LevelController.m_gameBounds.OverlapPoint(new Vector3(neuCachedPosition.x,neuCachedPosition.y))) {
 				_cachedPosition = neuCachedPosition;
 			}
+			
 
 			_zoom = Util.drpt(_zoom,_target_zoom,1/20.0f);
 

@@ -11,7 +11,7 @@ AI stuff:
 4. fix bug where an AI may stop responding if it gets bumped too many times
 */
 
-public class LevelController : MonoBehaviour {
+public class LevelController : MonoBehaviour, TouchEventDelegate {
 
 	[SerializeField] private GameObject proto_team;
 	[SerializeField] private GameObject proto_genericFootballer;
@@ -72,6 +72,8 @@ public class LevelController : MonoBehaviour {
 
 	public InGameCommentaryManager m_commentaryManager;
 	
+	public MNMTouchControlManager _control_manager = new MNMTouchControlManager();
+	
 	private GameObject m_mouseTargetIcon;
 	private float m_mouseTargetIconTheta;
 	private void mouse_target_icon_set_alpha(float val) {
@@ -93,9 +95,7 @@ public class LevelController : MonoBehaviour {
 	public void StartLevel(StartMode startMode = StartMode.Sequence) {
 		Main.AudioController.PlayEffect("crowd");
 		ResetLevel();
-		_last_mouse_position = new Vector3(0,-300,0);
-		_last_mouse_point_in_ball_bounds = new Vector3(0,0,0); //i dont even
-		_last_mouse_point_in_ball_bounds = Vector3.zero;
+		_control_manager.i_initialize();
 		//Debug.Log("Start level: " + CurrentDifficulty);
 
 		m_commentaryManager = new InGameCommentaryManager();
@@ -180,8 +180,9 @@ public class LevelController : MonoBehaviour {
 		}
 		m_topReferee.sim_initialize(Referee.RefereeMode.Top);
 		m_bottomReferee.sim_initialize(Referee.RefereeMode.Bottom);
-
-		Main.GameCamera.SetTargetPos(new Vector3(0,-300,0));
+		
+		_camera_focus_position = new Vector3(0,-300,0);
+		Main.GameCamera.SetTargetPos(_camera_focus_position);
 		Main.GameCamera.SetTargetZoom(800);
 		switch (startMode) {
 			case StartMode.Sequence:
@@ -324,20 +325,35 @@ public class LevelController : MonoBehaviour {
 		}
 		team.SetPlayers(bots);
 	}
+	
+	public void TouchBeginWithScreenPosition(Vector2 spos) { _control_manager.TouchBeginWithScreenPosition(spos); }
+	public void TouchHoldWithScreenPosition(Vector2 spos) { _control_manager.TouchHoldWithScreenPosition(spos); }
+	public void TouchEnd() { _control_manager.TouchEnd(); }
+	public int GetID() { return this.GetInstanceID(); }
+	public void notify_pause_button_toggled() {
+		_control_manager.notify_pause_button_toggled();
+	}
+
+	public Vector3 _camera_focus_position;	
 
 	public void Update() {
-
 		if (Main.PanelManager.CurrentPanelId != PanelIds.Game) return;
-		this.update_mouse_point();
+		
+		UiPanelGame.inst._touch_dispatcher.PDispatchTouchWithDelegate(UiPanelGame.inst,UiPanelGame.inst._touch_bounds);
+		
 		m_commentaryManager.i_update();
 
 		float mouse_target_anim_speed = 0.3f;
 		if (m_currentMode == LevelControllerMode.GoalZoomOut) {
 			UiPanelGame.inst._fadein.set_target_alpha(1);
-			Main.GameCamera.SetTargetPos(_goalzoomoutfocuspos);
+			_camera_focus_position.x = CurveAnimUtil.ApplyFrictionTick(_camera_focus_position.x,_goalzoomoutfocuspos.x,1/10.0f);
+			_camera_focus_position.y = CurveAnimUtil.ApplyFrictionTick(_camera_focus_position.y,_goalzoomoutfocuspos.y,1/10.0f);
+			_camera_focus_position.z = CurveAnimUtil.ApplyFrictionTick(_camera_focus_position.z,_goalzoomoutfocuspos.z,1/10.0f);
+			Main.GameCamera.SetTargetPos(_camera_focus_position);
 			Main.GameCamera.SetTargetZoom(300);
 			m_enemyGoal.spawn_confetti();
 			m_particles.i_update(this);
+			_control_manager.get_and_clear_pause_button_pressed();
 			if (UiPanelGame.inst._fadein.is_transition_finished()) {
 				this.ResetLevel();
 				Main.PanelManager.ChangeCurrentPanel(PanelIds.Tv);
@@ -361,49 +377,48 @@ public class LevelController : MonoBehaviour {
 			}
 			m_particles.i_update(this);
 			if (m_playerTeamFootballersWithBall.Count > 0) {
-				Main.GameCamera.SetTargetPos(m_playerTeamFootballersWithBall[0].transform.position);
-				if (Input.GetMouseButton(0)) {
-					Main.GameCamera.SetTargetZoom(600);
-				} else {
-					Main.GameCamera.SetTargetZoom(500);
-				}
-				if (Input.GetMouseButton(0)) {
-					Main.GameCamera.SetManualOffset(new Vector3(0,0,0));
-				} else {
-					Main.GameCamera.SetManualOffset(new Vector3(150,0,0));
-				}
-
-
-			} else {
-				Main.GameCamera.SetTargetPos(this.GetLastMousePointInBallBounds());
+				Vector3 tar_pos = m_playerTeamFootballersWithBall[0].transform.position;
+				_camera_focus_position.x = CurveAnimUtil.ApplyFrictionTick(_camera_focus_position.x,tar_pos.x,1/10.0f);
+				_camera_focus_position.y = CurveAnimUtil.ApplyFrictionTick(_camera_focus_position.y,tar_pos.y,1/10.0f);
+				_camera_focus_position.z = CurveAnimUtil.ApplyFrictionTick(_camera_focus_position.z,tar_pos.z,1/10.0f);
+				Main.GameCamera.SetTargetPos(_camera_focus_position);
 				Main.GameCamera.SetTargetZoom(600);
 				Main.GameCamera.SetManualOffset(new Vector3(0,0,0));
-			}
 
+			} else {
+				Main.GameCamera.SetTargetPos(_camera_focus_position);
+				Main.GameCamera.SetTargetZoom(600);
+				Main.GameCamera.SetManualOffset(new Vector3(0,0,0));
+				this.camera_control_pan();
+			}
 
 			mouse_target_anim_speed = 2.0f;
-			mouse_target_icon_set_alpha(1.0f);
-			//m_mouseTargetIcon.SetActive(true);
-			Vector3 mouse_pt = GetLastMousePointInBallBounds();
-			m_mouseTargetIcon.transform.position = mouse_pt;
-			m_mouseTargetIcon.transform.localScale = Util.valv(50.0f);
 
-			for (int i = m_looseBalls.Count-1; i >= 0; i--) {
-				LooseBall itr = this.m_looseBalls[i];	
-				itr.sim_update();
+			bool skip_updates = false;
+			if (_control_manager._this_frame_touch_ended) {
+				GenericFootballer clicked_footballer = IsPointTouchFootballer(_control_manager._last_world_touch_point,m_playerTeamFootballers);
+				if (clicked_footballer != null) {
+					skip_updates = true;
+				}
+			}
+			
+			if (!skip_updates) {
+				for (int i = m_looseBalls.Count-1; i >= 0; i--) {
+					LooseBall itr = this.m_looseBalls[i];	
+					itr.sim_update();
+				}
+				for (int i = this.m_playerTeamFootballers.Count-1; i >= 0; i--) {
+					GenericFootballer itr = this.m_playerTeamFootballers[i];	
+					itr.sim_update();
+				}
+				
+				for (int i = 0; i < this.m_enemyTeamFootballers.Count; i++) {
+					GenericFootballer itr = this.m_enemyTeamFootballers[i];	
+					itr.sim_update();
+				}
 			}
 
-			for (int i = this.m_playerTeamFootballers.Count-1; i >= 0; i--) {
-				GenericFootballer itr = this.m_playerTeamFootballers[i];	
-				itr.sim_update();
-			}
-
-			for (int i = 0; i < this.m_enemyTeamFootballers.Count; i++) {
-				GenericFootballer itr = this.m_enemyTeamFootballers[i];	
-				itr.sim_update();
-			}
-
-			if (Input.GetKey(KeyCode.Space)) {
+			if (_control_manager.get_and_clear_pause_button_pressed() || skip_updates) {
 				for (int i = 0; i < this.m_playerTeamFootballers.Count; i++) {
 					GenericFootballer itr = this.m_playerTeamFootballers[i];
 					itr.timeout_start();
@@ -444,38 +459,10 @@ public class LevelController : MonoBehaviour {
 
 
 		} else if (m_currentMode == LevelControllerMode.Timeout) {
-
-
-			Vector3 screen = Main.GameCamera.GetComponent<Camera>().WorldToScreenPoint(this.GetLastMousePointInBallBounds());
-			screen.z = 0;
-
-			Vector3 mouse_to_center_delta = Util.vec_sub(
-				screen,
-				new Vector2(Screen.width/2,Screen.height/2));
-			float mmouse_move_rad = (Screen.width+Screen.height)/2.0f * 0.25f;
-			if (mouse_to_center_delta.magnitude > mmouse_move_rad) {
-				Vector3 n_mouse_to_center_delta = mouse_to_center_delta.normalized;
-				Vector3 tar_delta = Util.vec_scale(n_mouse_to_center_delta,(mouse_to_center_delta.magnitude-mmouse_move_rad)*0.3f);
-				Main.GameCamera.SetTargetPos(Util.vec_add(Main.GameCamera.GetCurrentPosition(),tar_delta));
-			} else {
-				Main.GameCamera.SetTargetPositionToCurrent();
-			}
-
+			Main.GameCamera.SetTargetPos(_camera_focus_position);
 			Main.GameCamera.SetManualOffset(new Vector3(0,0,0));
 			Main.GameCamera.SetTargetZoom(800);
-			Vector3 mouse_pt = GetLastMousePointInBallBounds();
-			GenericFootballer select_tar = this.IsPointTouchFootballer(mouse_pt,m_playerTeamFootballers);
-			if (!Input.GetMouseButton(0) && select_tar != null && select_tar.can_take_commands()) {
-				mouse_target_icon_set_alpha(0.4f);
-				//m_mouseTargetIcon.SetActive(false);
-				select_tar.SetSelectedForAFrame();
-			} else {
-				mouse_target_icon_set_alpha(1.0f);
-				//m_mouseTargetIcon.SetActive(true);
-			}
-			m_mouseTargetIcon.transform.position = mouse_pt;
-			m_mouseTargetIcon.transform.localScale = Util.valv(75.0f);
-
+			
 
 			for (int i = 0; i < this.m_playerTeamFootballers.Count; i++) {
 				GenericFootballer itr = this.m_playerTeamFootballers[i];
@@ -483,24 +470,31 @@ public class LevelController : MonoBehaviour {
 			}
 
 			keyboard_switch_timeout_selected_footballer();
-
-			Vector2 click_pt;
-			if (this.IsClickAndPointDown(out click_pt)) {
-				GenericFootballer clicked_footballer = IsPointTouchFootballer(click_pt,m_playerTeamFootballers);
-				if (clicked_footballer != null) {
-					m_timeoutSelectedFootballer = clicked_footballer;
-				}
-			} else if (this.IsClickAndPoint(out click_pt)) {
-				if (m_timeoutSelectedFootballer != null && !this.footballer_has_ball(m_timeoutSelectedFootballer)) {
-					m_commentaryManager.notify_tutorial_command_issued();
+			
+			bool force_untimeout = false;
+			if (_control_manager._this_frame_touch_begin) {
+				GenericFootballer clicked_footballer = IsPointTouchFootballer(_control_manager._last_world_touch_point,m_playerTeamFootballers);
+				m_timeoutSelectedFootballer = clicked_footballer;
 				
-					click_pt = this.point_to_within_goallines_point(m_timeoutSelectedFootballer.transform.position,click_pt);
-
+			} else {
+				if (m_timeoutSelectedFootballer != null) {
+					m_commentaryManager.notify_tutorial_command_issued();
+					Vector2 click_pt = this.point_to_within_goallines_point(m_timeoutSelectedFootballer.transform.position,_control_manager._last_world_touch_point);
 					m_timeoutSelectedFootballer.CommandMoveTo(click_pt);
+					_control_manager._scroll_avg_vel = new Vector2();
+					if (!_control_manager._is_touch_down) {
+						m_timeoutSelectedFootballer = null;
+					}
+				
+				} else {
+					this.camera_control_pan();
+					if (_control_manager._this_frame_touch_ended && !_control_manager._has_touch_activated_drag) {
+						force_untimeout = true;
+					}
 				}
 			}
 
-			if (!Input.GetKey(KeyCode.Space)) {
+			if (_control_manager.get_and_clear_pause_button_pressed() || force_untimeout) {
 				m_currentMode = LevelControllerMode.GamePlay;
 				for (int i = 0; i < this.m_playerTeamFootballers.Count; i++) {
 					GenericFootballer itr = this.m_playerTeamFootballers[i];
@@ -510,8 +504,10 @@ public class LevelController : MonoBehaviour {
 				Main.AudioController.PlayEffect("sfx_unpause");
 				UiPanelGame.inst.bgm_audio_set_paused_mode(false);
 			}
+			
 		} else if (m_currentMode == LevelControllerMode.Opening) {
 			mouse_target_anim_speed = 2.0f;
+			_control_manager.get_and_clear_pause_button_pressed();
 			//m_mouseTargetIcon.SetActive(true);
 			mouse_target_icon_set_alpha(1.0f);
 			m_particles.i_update(this);
@@ -527,11 +523,6 @@ public class LevelController : MonoBehaviour {
 				Main.AudioController.PlayEffect("sfx_ready");
 			}
 			_last_countdown_ct = _countdown_ct;
-
-			Vector3 mouse_pt = GetLastMousePointInBallBounds();
-			m_mouseTargetIcon.transform.position = mouse_pt;
-			m_mouseTargetIcon.transform.localScale = Util.valv(50.0f);
-
 
 			if (m_matchOpeningAnimIds.Count == 0) {
 				m_currentMode = LevelControllerMode.GamePlay;
@@ -551,11 +542,42 @@ public class LevelController : MonoBehaviour {
 				m_enemyTeam.StartMatch();
 			}
 		}
-
+		
+		if (_control_manager._this_frame_touch_begin || _control_manager._this_frame_touch_ended) {
+			_mouse_target_ct = MOUSE_TARGET_CT_MAX;
+		}
+		float mouse_target_anim_t = (MOUSE_TARGET_CT_MAX-_mouse_target_ct)/MOUSE_TARGET_CT_MAX;
+		this.mouse_target_icon_set_alpha(Util.bezier_val_for_t(new Vector2(0,1),new Vector2(0,1),new Vector2(1,1),new Vector2(1,0),mouse_target_anim_t).y);
+		m_mouseTargetIcon.transform.localScale = Util.valv(
+			Util.y_for_point_of_2pt_line(new Vector2(0,50),new Vector2(1,75),
+			Util.bezier_val_for_t(new Vector2(0,1.5f),new Vector2(0,0.5f),new Vector2(1,1),new Vector2(1,0),mouse_target_anim_t).y));
+		
+		_mouse_target_ct = Mathf.Clamp(_mouse_target_ct-CurveAnimUtil.GetDeltaTimeScale(),0,MOUSE_TARGET_CT_MAX);
+		
+		m_mouseTargetIcon.transform.position = _control_manager._last_world_touch_point;
 		m_mouseTargetIconTheta += mouse_target_anim_speed * Util.dt_scale;
 		Util.transform_set_euler_world(m_mouseTargetIcon.transform,new Vector3(0,0,m_mouseTargetIconTheta));
-
+		
+		_control_manager.i_update();
 	}
+	
+	private void camera_control_pan() {
+		if (_control_manager._is_touch_down && _control_manager._has_touch_activated_drag) {
+			Vector2 tmp_point = _camera_focus_position + Util.vec_scale(_control_manager._scroll_frame_vel,-1);
+			if (m_gameBounds.OverlapPoint(tmp_point)) {
+				_camera_focus_position = tmp_point;
+			}
+			
+		} else {
+			Vector2 tmp_point = _camera_focus_position + Util.vec_scale(_control_manager._scroll_avg_vel,-1);
+			if (m_gameBounds.OverlapPoint(tmp_point)) {
+				_camera_focus_position = tmp_point;
+			}
+		}
+	}
+	
+	private const float MOUSE_TARGET_CT_MAX = 20;
+	private float _mouse_target_ct = 0;
 
 	public Vector2 point_to_within_goallines_point(Vector2 start, Vector2 click_pt) {
 		if (click_pt.x > _right_goal_line.position.x) {
@@ -748,54 +770,6 @@ public class LevelController : MonoBehaviour {
 		tmp._alpha.x = 0.8f;
 		tmp._alpha.y = 0.0f;
 		m_particles.add_particle(tmp);
-	}
-
-
-	public Vector3 _last_mouse_position;
-	public Vector3 GetMousePoint() {
-		return _last_mouse_position;
-	}
-
-	public void update_mouse_point() {
-		Vector3 vp_point = Main.GameCamera.GetComponent<Camera>().WorldToViewportPoint(_last_mouse_position);
-		float scf = Mathf.Clamp(1.0f - Vector2.Distance(new Vector2(0.5f,0.5f),vp_point),0,1) * 0.075f;
-
-		_last_mouse_position.x += Input.GetAxis ("Mouse X") * Screen.width * scf;
-		_last_mouse_position.y += Input.GetAxis ("Mouse Y") * Screen.height * scf;
-
-
-	}
-
-	public Vector3 _last_mouse_point_in_ball_bounds;
-	public Vector3 GetLastMousePointInBallBounds() {
-		Vector3 mpt = this.GetMousePoint();
-		if (m_gameBounds.OverlapPoint(mpt)) {
-			_last_mouse_point_in_ball_bounds = mpt;
-		
-		} else {
-			_last_mouse_point_in_ball_bounds = m_gameBounds.bounds.ClosestPoint(mpt);
-
-		}
-		return _last_mouse_point_in_ball_bounds;
-	}
-	
-	private bool IsClickAndPointDown(out Vector2 point) {
-		if (Input.GetMouseButtonDown(0)) {
-			point = GetLastMousePointInBallBounds();
-			return true;
-		}
-		point = Vector2.zero;
-		return false;
-	}
-
-	
-	private bool IsClickAndPoint(out Vector2 point) {
-		if (Input.GetMouseButton(0)) {
-			point = GetLastMousePointInBallBounds();
-			return true;
-		}
-		point = Vector2.zero;
-		return false;
 	}
 	
 	private GenericFootballer IsPointTouchFootballer(Vector3 pt, List<GenericFootballer> list) {
