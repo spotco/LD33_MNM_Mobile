@@ -39,7 +39,7 @@ public class AnimatedGoalPost : MonoBehaviour {
 		_animator.play_anim("idle");
 
 	}
-	void Update () {
+	void FixedUpdate () {
 		if (Main.IsPaused(PauseFlags.TimeOut)) return;
 		_tongue_theta += Util.dt_scale * 0.05f;
 		_tongue_theta_2 += Util.dt_scale * 0.02f;

@@ -59,7 +59,7 @@ public class FollowCamera : MonoBehaviour {
 		_start_pos = this.transform.position;
 	}
 	
-	void LateUpdate () {
+	void FixedUpdate () {
 		// Position interp.
 		{
 			Vector3 target_move_to_position = new Vector3(

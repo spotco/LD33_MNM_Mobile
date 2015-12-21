@@ -16,7 +16,7 @@ public class FSMDebugger : MonoBehaviour {
 		set { _team = value; }
 	}
 	
-	private void Update() {
+	private void FixedUpdate() {
 		if (_team == null) {
 			_teamText.text = "-";
 			for (int i = 0; i < _botTexts.Length; i++) {

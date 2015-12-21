@@ -48,7 +48,7 @@ public class BobDirection : MonoBehaviour {
 	void Update () {
 		if (Main.IsPaused(PauseFlags.TimeOut) && !_is_talking_head) return;
 		if (Main.IsPaused(PauseFlags.TalkingHeadStop) && _local && _is_talking_head) return;
-		_t += _vt * Util.dt_scale;
+		_t += _vt * CurveAnimUtil.GetDeltaTimeScale();
 		if (_enabled) {
 			if (!_local) {
 				_target.transform.position = _start_target_pos + new Vector3(0,(Mathf.Sin(_t)+1)*0.5f*(_x_max-_x_min) + _x_min,0);

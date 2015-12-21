@@ -86,7 +86,7 @@ public class GenericFootballer : MonoBehaviour {
 
 	}
 
-	void Update() {
+	void FixedUpdate() {
 		_renderer.sortingOrder = (int)(-transform.position.y * 100);
 		_select_reticule.sortingOrder = _renderer.sortingOrder-1;
 
@@ -223,7 +223,7 @@ public class GenericFootballer : MonoBehaviour {
 			
 		} else if (_current_mode == GenericFootballerMode.PlayerTeamHasBall) {
 			Main.LevelController.m_pathRenderer.clear_path(_id);
-			if (Main.LevelController._control_manager._has_touch_activated_drag) {
+			if (Main.LevelController._control_manager._has_touch_activated_drag && Vector2.Distance(Main.LevelController._control_manager._touch_start,new Vector2(Screen.width/2,Screen.height/2)) < Screen.width*0.25f) {
 				if (Main.LevelController._control_manager._this_frame_touch_ended) {
 					float vel = Mathf.Clamp(Main.LevelController._control_manager._scroll_avg_vel.magnitude,10,25);
 					this.throw_ball(Main.LevelController._control_manager._scroll_avg_vel.normalized, Util.y_for_point_of_2pt_line(new Vector2(10,80),new Vector2(25,250),vel));

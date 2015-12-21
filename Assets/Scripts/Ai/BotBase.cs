@@ -165,7 +165,7 @@ public class BotBase : MonoBehaviour {
 		_FSM.Configure(this, BotState_Idle.Instance);
 	}
  
-	public void Update() {
+	public void FixedUpdate() {
 		if (Main.IsPaused(PauseFlags.TimeOut | PauseFlags.Ai)) {
 			return;
 		}

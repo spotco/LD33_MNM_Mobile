@@ -56,7 +56,7 @@ public class UIPanelTitle : Uzu.UiPanel {
 		gameObject.SetActive(false);
 	}
 
-	void Update() {
+	public void FixedUpdate() {
 		if (_intro_bgm_handle._handle_audio_source != null && !_intro_bgm_handle._handle_audio_source.isPlaying) {
 			_intro_bgm_handle._handle_audio_source = null;
 			Main.AudioController.PlayBgm(AudioClipIds.BGM_MENU_LOOP);

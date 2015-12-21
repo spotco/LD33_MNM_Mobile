@@ -108,7 +108,7 @@ public class Main : Uzu.Main
 
 	[SerializeField] public Camera _titleCamera;
 
-	public void Update() {
+	public void FixedUpdate() {
 		float dt_scale = (1/60.0f)/(Time.deltaTime);
 		Util.dt_scale = dt_scale;
 		//Cursor.visible = false;

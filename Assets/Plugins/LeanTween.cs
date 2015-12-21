@@ -1863,7 +1863,7 @@ public static void reset(){
 	Destroy(_tweenEmpty);
 }
 
-public void Update(){
+public void FixedUpdate(){
 	LeanTween.update();
 }
 

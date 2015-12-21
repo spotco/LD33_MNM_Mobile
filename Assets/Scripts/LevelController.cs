@@ -336,7 +336,7 @@ public class LevelController : MonoBehaviour, TouchEventDelegate {
 
 	public Vector3 _camera_focus_position;	
 
-	public void Update() {
+	public void FixedUpdate() {
 		if (Main.PanelManager.CurrentPanelId != PanelIds.Game) return;
 		
 		UiPanelGame.inst._touch_dispatcher.PDispatchTouchWithDelegate(UiPanelGame.inst,UiPanelGame.inst._touch_bounds);
@@ -395,7 +395,7 @@ public class LevelController : MonoBehaviour, TouchEventDelegate {
 			mouse_target_anim_speed = 2.0f;
 
 			bool skip_updates = false;
-			if (_control_manager._this_frame_touch_ended) {
+			if (_control_manager._this_frame_touch_ended && !_control_manager._has_touch_activated_drag) {
 				GenericFootballer clicked_footballer = IsPointTouchFootballer(_control_manager._last_world_touch_point,m_playerTeamFootballers);
 				if (clicked_footballer != null) {
 					skip_updates = true;

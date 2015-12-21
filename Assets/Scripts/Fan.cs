@@ -40,7 +40,7 @@ public class Fan : MonoBehaviour {
 		}).setEase(LeanTweenType.easeOutQuad);
 	}
 	
-	void Update () {
+	void FixedUpdate () {
 		// float jump
 		// LeanTween.moveY(
 		// 	this.gameObject,

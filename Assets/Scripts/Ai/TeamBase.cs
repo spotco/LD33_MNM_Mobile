@@ -103,7 +103,7 @@ public class TeamBase : MonoBehaviour {
 		_FSM.Configure(this, TeamState_Wait.Instance);
 	}
  
-	public void Update() {
+	public void FixedUpdate() {
 		if (Main.IsPaused(PauseFlags.TimeOut | PauseFlags.Ai)) {
 			return;
 		}

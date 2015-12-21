@@ -19,7 +19,7 @@ public class CameraFade : MonoBehaviour {
 		return Mathf.Abs(this.GetComponent<SpriteRenderer>().color.a - _target_alpha) < 0.05f;
 	}
 
-	void Update () {
+	void FixedUpdate () {
 		set_alpha(Util.drpt(this.GetComponent<SpriteRenderer>().color.a,_target_alpha,1/30.0f));
 	}
 

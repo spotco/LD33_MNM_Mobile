@@ -101,7 +101,7 @@ public class UiPanelGame : Uzu.UiPanel, TouchEventDelegate {
 	}
 	public int GetID() { return _touch_bounds.gameObject.GetInstanceID(); }
 	
-	private void Update() {
+	private void FixedUpdate() {
 	
 		if (_pause_button.GetAndClearButtonProc()) {
 			Main.LevelController.notify_pause_button_toggled();

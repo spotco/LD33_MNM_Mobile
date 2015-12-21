@@ -33,10 +33,15 @@ public class Util {
 		return new Vector3(mag*Mathf.Cos(ang), mag*Mathf.Sin(ang), v.z);
 	}
 
-	public static float drpt(float a, float b, float fric) {
-		float deltaf = (b - a);
-		deltaf *= Mathf.Pow(fric,1/Util.dt_scale);
-		return a + deltaf;
+	public static float drpt(float start, float to, float fric) {
+		// y = e ^ (-a * timescale)
+		fric = 1 - fric;
+		float a = Mathf.Log(fric);
+		float y = 1 - Mathf.Exp(a * CurveAnimUtil.GetDeltaTimeScale());
+		
+		// rtv = start + (to - start) * timescaled_friction
+		float delta = (to - start) * y;
+		return start + delta;
 	}
 
 	public static float lerp(float a, float b, float t) {

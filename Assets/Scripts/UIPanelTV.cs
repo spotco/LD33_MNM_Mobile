@@ -129,7 +129,7 @@ public class UIPanelTV : Uzu.UiPanel, TouchEventDelegate {
 	public int GetID() { return _touch_bounds.gameObject.GetInstanceID(); }
 	
 	private float _time_until_next_talk_sound = 0;
-	private void Update() {
+	private void FixedUpdate() {
 		if (_current_mode == UIPanelTVMode.Idle) {
 			_touch_dispatcher.PDispatchTouchWithDelegate(this,_touch_bounds);
 			if (_double_tap_activated || (_chats._messages.Count == 0 && _chats._text_scroll.finished() && _chats._ct <= 0)) {

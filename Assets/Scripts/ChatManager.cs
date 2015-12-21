@@ -43,7 +43,7 @@ public class ChatManager : MonoBehaviour {
 	}
 
 	public float _ct = 0;
-	public void Update() {
+	public void FixedUpdate() {
 		if (_ct <= 0 && _messages.Count > 0 && _text_scroll.finished()) {
 			_text_scroll.load(_messages[0]);
 			_messages.RemoveAt(0);

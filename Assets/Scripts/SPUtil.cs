@@ -31,7 +31,7 @@ public class SPUtil {
     if (Input.GetMouseButton(0)) {
       return true;
     }
-    #elif UNITY_IOS
+    #elif UNITY_IOS || UNITY_ANDROID
     Touch[] touches = Input.touches;
     for (int i = 0; i < touches.Length; i++) {
       if (touches[i].fingerId == 0 && touches[i].phase != TouchPhase.Ended) {
@@ -51,7 +51,7 @@ public class SPUtil {
       rtv = true;
       pixel_screen_pos = 
         new Vector2(Input.mousePosition.x, Input.mousePosition.y);
-      #elif UNITY_IOS
+      #elif UNITY_IOS || UNITY_ANDROID
       rtv = true;
       Touch[] touches = Input.touches;
       for (int i = 0; i < touches.Length; i++) {
