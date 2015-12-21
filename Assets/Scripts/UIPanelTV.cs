@@ -43,11 +43,11 @@ public class UIPanelTV : Uzu.UiPanel, TouchEventDelegate {
 				_chats.push_message("..against their division rival, the Reds!",1);
 				_chats.push_message("I'm so excited, my BONES are SHAKING!",2);
 				_chats.push_message("So for all you first time viewers, let's talk controls.",1);
-				_chats.push_message("You directly control the blue ball carrier with your mouse.",1);
-				_chats.push_message("With the ball, click and hold to throw a pass.",1);
+				_chats.push_message("Move around the ball carrier by tapping.",1);
+				_chats.push_message("With the ball, double tap and hold to aim and throw a pass.",1);
 				_chats.push_message("If you miss, try not to get RATTLED!",2);
-				_chats.push_message("Hold space to call a timeout.",1);
-				_chats.push_message("When in timeout, click and drag a teammate to give them commands.",1);
+				_chats.push_message("Tap a teammate or the pause icon in the top right to enter timeout.",1);
+				_chats.push_message("When in timeout, tap and drag teammates to give orders.",1);
 				_chats.push_message("You're like a modern day Napolean BONE-apart!",2);
 				_chats.push_message("Kickoff's just about to get underway.",1);
 				_chats.push_message("Can the Blues score in the first quarter?",1);

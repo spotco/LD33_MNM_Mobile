@@ -12,6 +12,9 @@ public class UIPanelTitle : Uzu.UiPanel {
 	[SerializeField] private SpriteRenderer _cover;
 	[SerializeField] private SpriteRenderer _click_anywhere_to_start;
 	[SerializeField] private SpriteRenderer _credits;
+	
+	[SerializeField] private SpriteRenderer _spotco_logo_sub_logo;
+	[SerializeField] private SpriteRenderer _credits_logo_sub_logo;
 
 	private Uzu.AudioHandle _intro_bgm_handle;
 
@@ -36,6 +39,7 @@ public class UIPanelTitle : Uzu.UiPanel {
 		_intro_bgm_handle = Main.AudioController.PlayBgm(AudioClipIds.BGM_MENU_INTRO,false);
 
 		sprite_set_alpha(_spotco_logo,0);
+		sprite_set_alpha(_spotco_logo_sub_logo,0);
 		sprite_set_alpha(_mnm_base,1);
 		sprite_set_alpha(_mnm_logo,1);
 		sprite_set_y(_mnm_logo,-280);
@@ -43,6 +47,7 @@ public class UIPanelTitle : Uzu.UiPanel {
 		sprite_set_alpha(_cover,1);
 		sprite_set_alpha(_click_anywhere_to_start,0);
 		sprite_set_alpha(_credits,0);
+		sprite_set_alpha(_credits_logo_sub_logo,0);
 		_camera_fade.set_alpha(1);
 		_camera_fade.set_target_alpha(1);
 
@@ -65,6 +70,7 @@ public class UIPanelTitle : Uzu.UiPanel {
 		case TitleState.SpotcoLogoIn:{
 			_anim_t += 0.015f;
 			sprite_set_alpha(_spotco_logo,_anim_t);
+			sprite_set_alpha(_spotco_logo_sub_logo,_anim_t);
 			if (_anim_t >= 1.0f) {
 				_current_state = TitleState.SpotcoLogoOut;
 			}
@@ -73,6 +79,7 @@ public class UIPanelTitle : Uzu.UiPanel {
 		case TitleState.SpotcoLogoOut:{
 			_anim_t -= 0.015f;
 			sprite_set_alpha(_spotco_logo,_anim_t);
+			sprite_set_alpha(_spotco_logo_sub_logo,_anim_t);
 			if (_anim_t <= 0.0f) {
 				_current_state = TitleState.MNMLogoIn;
 				_anim_t = 0;
@@ -104,6 +111,7 @@ public class UIPanelTitle : Uzu.UiPanel {
 			_camera_fade.set_alpha(_anim_t);
 			_camera_fade.set_target_alpha(_anim_t);
 			sprite_set_alpha(_credits,1-_anim_t);
+			sprite_set_alpha(_credits_logo_sub_logo,1-_anim_t);
 			if (_anim_t <= 0) {
 				Main.AudioController.PlayEffect("crowd");
 				_current_state = TitleState.Loop;
@@ -128,6 +136,7 @@ public class UIPanelTitle : Uzu.UiPanel {
 			sprite_set_alpha(_mnm_base,1-_anim_t);
 			sprite_set_alpha(_mnm_logo,1-_anim_t);
 			sprite_set_alpha(_credits,1-_anim_t);
+			sprite_set_alpha(_credits_logo_sub_logo,1-_anim_t);
 			sprite_set_alpha(_click_anywhere_to_start,0);
 			if (_anim_t >= 1) {
 				_current_state = TitleState.GotoTV;

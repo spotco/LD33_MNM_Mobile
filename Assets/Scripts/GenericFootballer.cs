@@ -223,20 +223,54 @@ public class GenericFootballer : MonoBehaviour {
 			
 		} else if (_current_mode == GenericFootballerMode.PlayerTeamHasBall) {
 			Main.LevelController.m_pathRenderer.clear_path(_id);
-			if (Main.LevelController._control_manager._has_touch_activated_drag && Vector2.Distance(Main.LevelController._control_manager._touch_start,new Vector2(Screen.width/2,Screen.height/2)) < Screen.width*0.25f) {
-				if (Main.LevelController._control_manager._this_frame_touch_ended) {
-					float vel = Mathf.Clamp(Main.LevelController._control_manager._scroll_avg_vel.magnitude,10,25);
-					this.throw_ball(Main.LevelController._control_manager._scroll_avg_vel.normalized, Util.y_for_point_of_2pt_line(new Vector2(10,80),new Vector2(25,250),vel));
-					Main.LevelController._control_manager._scroll_avg_vel = new Vector2();
-					_ball_charging = false;
-				} else {
-					_ball_charging = Main.LevelController._control_manager._is_touch_down;
+			
+			Vector3 delta =  Util.vec_sub(Main.LevelController._control_manager._last_world_touch_point,transform.position);
+			Vector3 dir = delta.normalized;
+			float mag = delta.magnitude;
+			Main.LevelController.m_pathRenderer.clear_path(_id);
+			
+			bool ball_action = Main.LevelController._control_manager._this_touch_is_double_tap;
+			float dist = Vector3.Distance(Main.LevelController._control_manager._last_world_touch_point,this.transform.position);
+			
+			if (ball_action && Main.LevelController._control_manager._is_touch_down) {
+				_ball_charging = true;
+				_throw_charge_ct = Mathf.Clamp(Mathf.Min(_throw_charge_ct+Util.dt_scale*10.0f,mag),0,700);
+				
+				Vector3 p0 = this.transform.position;
+				Vector3 p3 = Util.vec_add(p0,Util.vec_scale(dir,_throw_charge_ct));
+				Vector3 p1 = new Vector3(
+					Util.lerp(p0.x,p3.x,0.25f),
+					Util.lerp(p0.y,p3.y,0.25f),
+					-150
+				);
+				Vector3 p2 = new Vector3(
+					Util.lerp(p0.x,p3.x,0.75f),
+					Util.lerp(p0.y,p3.y,0.75f),
+					-150
+				);
+				__tmp.Clear();
+				for (float i = 0; i < 1.0f; i += 0.125f) {
+					__tmp.Add(Util.bezier_val_for_t(p0,p1,p2,p3,i));
 				}
+				__tmp.Add(p3);
+				Main.LevelController.m_pathRenderer.id_draw_path(_id,this.transform.position,__tmp.ToArray());
+				
+			} else if (Main.LevelController._control_manager._this_frame_touch_ended && _ball_charging) {
+				if (_throw_charge_ct > 100) {
+					this.throw_ball(dir, _throw_charge_ct);
+				} else if (dist > 200) {
+					this.throw_ball(dir,100);
+				}
+				_ball_charging = false;
+				_throw_charge_ct = 0;
 				
 			} else {
 				_ball_charging = false;
 				if (Main.LevelController._control_manager._this_frame_touch_ended) {
-					this.CommandMoveTo(Main.LevelController._control_manager._last_world_touch_point);
+					GenericFootballer clicked_footballer = Main.LevelController.IsPointTouchFootballer(Main.LevelController._control_manager._last_world_touch_point,Main.LevelController.m_playerTeamFootballers);
+					if (clicked_footballer == null) {
+						this.CommandMoveTo(Main.LevelController._control_manager._last_world_touch_point);
+					}
 				}
 				this.command_moving_action();
 			}

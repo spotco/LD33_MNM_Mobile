@@ -136,7 +136,7 @@ public class InGameCommentaryManager {
 
 				} else if (!_tutorial_has_passed_ball) {
 					if (Main.LevelController.get_footballer_team(Main.LevelController.nullableCurrentFootballerWithBall()) == Team.PlayerTeam) {
-						UiPanelGame.inst._chats.push_message("Swipe in a direction to throw a pass.",1);
+						UiPanelGame.inst._chats.push_message("Double tap to aim and throw a pass!",1);
 					}
 					
 				} else {

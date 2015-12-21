@@ -199,8 +199,6 @@ public class LevelController : MonoBehaviour, TouchEventDelegate {
 	private void DoMatchOpeningSequence() {
 		m_currentMode = LevelControllerMode.Opening;
 		_countdown_ct = 0;
-		// hide cursor
-		//m_mouseTargetIcon.SetActive(false);
 		
 		List<BotBase> allBots = new List<BotBase>(
 			m_playerTeam.TeamMembers.Count + m_enemyTeam.TeamMembers.Count);
@@ -334,7 +332,10 @@ public class LevelController : MonoBehaviour, TouchEventDelegate {
 		_control_manager.notify_pause_button_toggled();
 	}
 
-	public Vector3 _camera_focus_position;	
+	public Vector3 _camera_focus_position;
+	
+	private GenericFootballer _try_gameplay_select_footballer;
+	private System.DateTime _try_gameplay_select_footballer_time;
 
 	public void FixedUpdate() {
 		if (Main.PanelManager.CurrentPanelId != PanelIds.Game) return;
@@ -398,7 +399,21 @@ public class LevelController : MonoBehaviour, TouchEventDelegate {
 			if (_control_manager._this_frame_touch_ended && !_control_manager._has_touch_activated_drag) {
 				GenericFootballer clicked_footballer = IsPointTouchFootballer(_control_manager._last_world_touch_point,m_playerTeamFootballers);
 				if (clicked_footballer != null) {
-					skip_updates = true;
+					if (m_playerTeamFootballersWithBall.Count > 0) {
+						_try_gameplay_select_footballer = clicked_footballer;
+						_try_gameplay_select_footballer_time = System.DateTime.Now;
+					} else {
+						skip_updates = true;
+					}
+				}
+			}
+			
+			if (_try_gameplay_select_footballer != null) {
+				if (System.DateTime.Now.Subtract(_try_gameplay_select_footballer_time).TotalSeconds > 0.11f) {
+					_try_gameplay_select_footballer = null;
+					if (!_control_manager._this_touch_is_double_tap) {
+						skip_updates = true;
+					}
 				}
 			}
 			
@@ -772,7 +787,7 @@ public class LevelController : MonoBehaviour, TouchEventDelegate {
 		m_particles.add_particle(tmp);
 	}
 	
-	private GenericFootballer IsPointTouchFootballer(Vector3 pt, List<GenericFootballer> list) {
+	public GenericFootballer IsPointTouchFootballer(Vector3 pt, List<GenericFootballer> list) {
 		for (int i = 0; i < list.Count; i++) {
 			if (list[i].ContainsPointClick(pt)) return list[i];
 		}

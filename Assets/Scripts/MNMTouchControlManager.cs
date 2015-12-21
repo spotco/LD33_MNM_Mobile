@@ -91,10 +91,6 @@ public class MNMTouchControlManager : TouchEventDelegate {
 		return rtv;
 	}
 	
-	public Vector3 get_last_touch_world_position() {
-		return _last_world_touch_point;
-	}
-	
 	public void i_update() {
 		if (!_is_touch_down) {
 			float mag = _scroll_avg_vel.magnitude;

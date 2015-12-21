@@ -7821,7 +7821,7 @@ BoxCollider2D:
   m_Size: {x: 1, y: 1}
 --- !u!212 &461354433 stripped
 SpriteRenderer:
-  m_PrefabParentObject: {fileID: 21257922, guid: 756eabdf2ef7f49f79687a596fcb3057,
+  m_PrefabParentObject: {fileID: 21268462, guid: 756eabdf2ef7f49f79687a596fcb3057,
     type: 2}
   m_PrefabInternal: {fileID: 1738529381}
 --- !u!1 &461435362
@@ -15506,6 +15506,11 @@ SpriteRenderer:
   m_SortingOrder: 99
   m_Sprite: {fileID: 21300000, guid: fd36e90fcd9254026a73193f08bafe7a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: .391000003}
+--- !u!212 &1052654313 stripped
+SpriteRenderer:
+  m_PrefabParentObject: {fileID: 21257922, guid: 756eabdf2ef7f49f79687a596fcb3057,
+    type: 2}
+  m_PrefabInternal: {fileID: 1738529381}
 --- !u!1 &1056763164
 GameObject:
   m_ObjectHideFlags: 0
@@ -15928,6 +15933,11 @@ Transform:
   - {fileID: 133845449}
   m_Father: {fileID: 766756909}
   m_RootOrder: 0
+--- !u!212 &1101233134 stripped
+SpriteRenderer:
+  m_PrefabParentObject: {fileID: 21252902, guid: 756eabdf2ef7f49f79687a596fcb3057,
+    type: 2}
+  m_PrefabInternal: {fileID: 1738529381}
 --- !u!1 &1103887113
 GameObject:
   m_ObjectHideFlags: 0
@@ -23198,6 +23208,8 @@ MonoBehaviour:
   _cover: {fileID: 1489572456}
   _click_anywhere_to_start: {fileID: 370734424}
   _credits: {fileID: 1247547385}
+  _spotco_logo_sub_logo: {fileID: 1052654313}
+  _credits_logo_sub_logo: {fileID: 1101233134}
 --- !u!1 &1642994613
 GameObject:
   m_ObjectHideFlags: 0
@@ -24603,6 +24615,26 @@ Prefab:
     - target: {fileID: 446538, guid: 756eabdf2ef7f49f79687a596fcb3057, type: 2}
       propertyPath: m_RootOrder
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 496570, guid: 756eabdf2ef7f49f79687a596fcb3057, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: 54.0999985
+      objectReference: {fileID: 0}
+    - target: {fileID: 496570, guid: 756eabdf2ef7f49f79687a596fcb3057, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 478606, guid: 756eabdf2ef7f49f79687a596fcb3057, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: .910000026
+      objectReference: {fileID: 0}
+    - target: {fileID: 478606, guid: 756eabdf2ef7f49f79687a596fcb3057, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 478606, guid: 756eabdf2ef7f49f79687a596fcb3057, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 180470, guid: 756eabdf2ef7f49f79687a596fcb3057, type: 2}
       propertyPath: m_IsActive
