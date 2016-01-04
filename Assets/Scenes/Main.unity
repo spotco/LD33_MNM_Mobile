@@ -24616,26 +24616,6 @@ Prefab:
       propertyPath: m_RootOrder
       value: 2
       objectReference: {fileID: 0}
-    - target: {fileID: 496570, guid: 756eabdf2ef7f49f79687a596fcb3057, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: 54.0999985
-      objectReference: {fileID: 0}
-    - target: {fileID: 496570, guid: 756eabdf2ef7f49f79687a596fcb3057, type: 2}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 478606, guid: 756eabdf2ef7f49f79687a596fcb3057, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: .910000026
-      objectReference: {fileID: 0}
-    - target: {fileID: 478606, guid: 756eabdf2ef7f49f79687a596fcb3057, type: 2}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 478606, guid: 756eabdf2ef7f49f79687a596fcb3057, type: 2}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 180470, guid: 756eabdf2ef7f49f79687a596fcb3057, type: 2}
       propertyPath: m_IsActive
       value: 0

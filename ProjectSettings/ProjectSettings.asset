@@ -9,8 +9,8 @@ PlayerSettings:
   targetDevice: 2
   targetResolution: 0
   accelerometerFrequency: 60
-  companyName: spotco
-  productName: MondayNightMonsters
+  companyName: "\x10playplayfun"
+  productName: Monday Night Monsters
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_ShowUnitySplashScreen: 1
@@ -83,7 +83,7 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  bundleIdentifier: com.spotco.MondayNightMonsters
+  bundleIdentifier: com.playplayfun.mondaynightmonsters
   bundleVersion: 1.0
   preloadedAssets: []
   metroEnableIndependentInputSource: 0
@@ -138,8 +138,8 @@ PlayerSettings:
   AndroidTargetDevice: 0
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: 
-  AndroidKeyaliasName: 
+  AndroidKeystoreName: user.keystore
+  AndroidKeyaliasName: mondaynightmonsters
   AndroidTVCompatibility: 1
   AndroidIsGame: 1
   androidEnableBanner: 0
